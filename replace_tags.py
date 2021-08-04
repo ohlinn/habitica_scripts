@@ -34,6 +34,8 @@ parser.add_argument('-d', '--delete-tag',
                     type=str)
 parser.add_argument('-a', '--add-tag',
                     type=str)
+parser.add_argument('-t', '--task-id',
+                    type=str)
 args = parser.parse_args()
 args.baseurl += "/api/v3/"
 
@@ -106,62 +108,70 @@ def Differ(dict,list):
     return(newlist)
 
         
-
-if args.delete_tag is None and args.add_tag is None:
-    print("Default action: add a tag to the challenge tasks and the no-challenge tasks")
-    
-    for counter1, item in enumerate(allTasks, start=1):
-        myTags = item['tags']
-        task = {}
-        task.update({'id': item['id'], "tags": item['tags']})
-        if len(item['challenge']) != 0:
-            cTasks.append(task)
-        else:
-            pTasks.append(task)
-
-    pDelTag=getList(pTasks,cTag)
-    pHasTag=getList(pTasks,pTag)
-    pToTag=Differ(pTasks,pHasTag)
-    cDelTag=getList(cTasks,pTag)
-    cHasTag=getList(cTasks,cTag)
-    cToTag=Differ(cTasks,cHasTag)
-
-    print(f'TOTAL TASKS: {counter1}')
-    print(f'CHALLENGE TASKS: {len(cTasks)} \nWrong tag: {len(cDelTag)}\tGood tag: {len(cHasTag)}\tTo tag: {len(cToTag)}')
-    print(f'PERSONAL TASKS: {len(pTasks)} \nWrong tag: {len(pDelTag)}\tGood tag: {len(pHasTag)}\tTo tag: {len(pToTag)}')
-    input("Press Enter to continue...")
-
-    print("Adding challenge tag to tasks...")
-    AddTag(cToTag,cTag)
-    print("END.")
-    print("Deleting wrong tag in challenge tags...")
-    DeleteTag(cDelTag,pTag)
-    print("END.")
-    print("Adding personal tag to tasks...")
-    AddTag(pToTag,pTag)
-    print("END.")
-    print("Deleting wrong tag in personal tasks...")
-    DeleteTag(pDelTag,cTag)
-    print("END.")
-elif args.delete_tag is None and args.add_tag:
-    print("Custom action: add tag")
-    addTags = []
-    addTags = getList(allTasks, args.add_tag)
-    print(f"Adding tag in {len(addTags)} tasks.")
-    AddTag(addTags,args.add_tag)
-    print("END.")
-elif args.add_tag is None and args.delete_tag:
-    print("Custom action: delete tag")
-    deleteTags = []
-    deleteTags = getList(allTasks, args.delete_tag)
-    print(f"Deleting tag in {len(deleteTags)} tasks.")
-    AddTag(deleteTags,args.delete_tag)
-    print("END.")
+if args.task_id:
+    if args.add_tag:
+        print("Adding the tag on the task.")
+        requests.post(args.baseurl + "tasks/" + args.task_id + "/tags/" + args.add_tag,  headers=headers)
+        print("Done")
+    elif args.delete_tag:
+        print("Deleting the tag on the task.")
+        requests.delete(args.baseurl + "tasks/" + args.task_id + "/tags/" + args.delete_tag,  headers=headers)
+        print("Done")
+    if args.delete_tag is None and args.add_tag is None:
+        print("Add with the -/--add-tag or -d/--delete-tag the tag ID you want to add, delete or both to replace.")
+     
 else:
-    print("Custom action: replace tags")
-    changeTags = []
-    changeTags = getList(allTasks, args.delete_tag)
-    print(f"Replacing tag in {len(changeTags)} tasks.")
-    DeleteTag(changeTags,args.delete_tag)
-    AddTag(changeTags,args.add_tag)
-    print("END.")
+    if args.add_tag and args.delete_tag:
+        print("Custom action: replace tags in all tasks")
+        changeTags = []
+        changeTags = getList(allTasks, args.delete_tag)
+        print(f"Replacing tag in {len(changeTags)} tasks.")
+        DeleteTag(changeTags,args.delete_tag)
+        AddTag(changeTags,args.add_tag)
+        print("Done")
+    elif args.add_tag is None and args.delete_tag:
+        print("Custom action: delete tag")
+        deleteTags = []
+        deleteTags = getList(allTasks, args.delete_tag)
+        print(f"Deleting tag in {len(deleteTags)} tasks.")
+        AddTag(deleteTags,args.delete_tag)
+        print("Done")
+    elif args.add_tag and args.delete_tag is None:
+        print("Add with the  -a/--add-tag or -d/--delete-tag options the tag ID you want to add, delete, or both to replace. Add with -t/--task-id the task ID you want to tag. ")
+
+    elif args.delete_tag is None and args.add_tag is None:
+        print("Default action: add a tag to the challenge tasks and the no-challenge tasks")
+        for counter1, item in enumerate(allTasks, start=1):
+            myTags = item['tags']
+            task = {}
+            task.update({'id': item['id'], "tags": item['tags']})
+            if len(item['challenge']) != 0:
+                cTasks.append(task)
+            else:
+                pTasks.append(task)
+
+        pDelTag=getList(pTasks,cTag)
+        pHasTag=getList(pTasks,pTag)
+        pToTag=Differ(pTasks,pHasTag)
+        cDelTag=getList(cTasks,pTag)
+        cHasTag=getList(cTasks,cTag)
+        cToTag=Differ(cTasks,cHasTag)
+
+        print(f'TOTAL TASKS: {counter1}')
+        print(f'CHALLENGE TASKS: {len(cTasks)} \nWrong tag: {len(cDelTag)}\tGood tag: {len(cHasTag)}\tTo tag: {len(cToTag)}')
+        print(f'PERSONAL TASKS: {len(pTasks)} \nWrong tag: {len(pDelTag)}\tGood tag: {len(pHasTag)}\tTo tag: {len(pToTag)}')
+        input("Press Enter to continue...")
+
+        print("Adding challenge tag to tasks...")
+        AddTag(cToTag,cTag)
+        print("Done")
+        print("Deleting wrong tag in challenge tags...")
+        DeleteTag(cDelTag,pTag)
+        print("Done")
+        print("Adding personal tag to tasks...")
+        AddTag(pToTag,pTag)
+        print("Done")
+        print("Deleting wrong tag in personal tasks...")
+        DeleteTag(pDelTag,cTag)
+        print("Done")
+    
