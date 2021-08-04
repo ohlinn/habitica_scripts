@@ -69,14 +69,14 @@ pToTag=[]
 
 
 def DeleteTag(tasks,tag):
-    for counter,item in enumerate(tasks):
+    for counter,item in enumerate(tasks, start=1):
         requests.delete(args.baseurl + "tasks/" + item + "/tags/" + tag,  headers=headers)
         time.sleep(60/30)
         print(counter)
 
 
 def AddTag(tasks,tag):
-    for counter2, item in enumerate(tasks):
+    for counter2, item in enumerate(tasks, start=1):
         requests.post(args.baseurl + "tasks/" + item + "/tags/" + tag,  headers=headers)
         time.sleep(60/30)
         print(counter2)
@@ -143,11 +143,25 @@ if args.delete_tag is None and args.add_tag is None:
     print("Deleting wrong tag in personal tasks...")
     DeleteTag(pDelTag,cTag)
     print("END.")
+elif args.delete_tag is None and args.add_tag:
+    print("Custom action: add tag")
+    addTags = []
+    addTags = getList(allTasks, args.add_tag)
+    print(f"Adding tag in {len(addTags)} tasks.")
+    AddTag(addTags,args.add_tag)
+    print("END.")
+elif args.add_tag is None and args.delete_tag:
+    print("Custom action: delete tag")
+    deleteTags = []
+    deleteTags = getList(allTasks, args.delete_tag)
+    print(f"Deleting tag in {len(deleteTags)} tasks.")
+    AddTag(deleteTags,args.delete_tag)
+    print("END.")
 else:
     print("Custom action: replace tags")
     changeTags = []
     changeTags = getList(allTasks, args.delete_tag)
-    print(f"Replacing tags of {len(changeTags)} tasks.")
+    print(f"Replacing tag in {len(changeTags)} tasks.")
     DeleteTag(changeTags,args.delete_tag)
     AddTag(changeTags,args.add_tag)
     print("END.")
