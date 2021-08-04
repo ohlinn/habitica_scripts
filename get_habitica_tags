@@ -13,10 +13,10 @@ class Debug(argparse.Action):
 
 
 # MAIN
-parser = argparse.ArgumentParser(description="Dumps your tasks to a file user-tasks.json in the current directory")
+parser = argparse.ArgumentParser(description="Dumps your tasks to a file user-tags.json in the current directory")
 parser.add_argument('-o', '--outfile',
                     type=argparse.FileType('w'), default="user-tags.json",
-                    help='JSON data file (default: user-tasks.json)')
+                    help='JSON data file (default: user-tags.json)')
 parser.add_argument('-u', '--user-id',
                     help='From https://habitica.com/#/options/settings/api\n \
                     default: environment variable HAB_API_USER')
@@ -62,6 +62,5 @@ for tag_entry in reqt.json()['data']:
   each_tag.append(tag_info)
 tags_data.update({"TAGS": each_tag})
 
-with open(args.outfile, 'w', encoding='utf8') as json_file:
+with open('user-tags.json', 'w', encoding='utf8') as json_file:
     json.dump(tags_data, json_file, ensure_ascii=False, separators=(',', ':'), sort_keys=True, indent=3)
-
